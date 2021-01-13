@@ -18,6 +18,7 @@
 
 package org.apache.flink.kubernetes.kubeclient.resources;
 
+import org.apache.flink.kubernetes.KubernetesResourceManagerDriver;
 import org.apache.flink.kubernetes.kubeclient.FlinkKubeClient;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -44,6 +45,9 @@ public abstract class AbstractKubernetesWatcher<T extends HasMetadata, K extends
 		// null means the watcher is closed normally.
 		if (cause == null) {
 			logger.info("The watcher is closing.");
+		} else if (cause.toString().contains("too old resource version")
+			&& callbackHandler instanceof KubernetesResourceManagerDriver.PodCallbackHandlerImpl) {
+			((KubernetesResourceManagerDriver.PodCallbackHandlerImpl) callbackHandler).reWatchPods();
 		} else {
 			callbackHandler.handleFatalError(cause);
 		}
